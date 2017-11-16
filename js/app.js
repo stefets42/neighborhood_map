@@ -69,13 +69,13 @@ var ViewModel = function() {
 	        largeInfowindow.open(map, this);
 	    });
 	    x.marker.addListener('click', function() {
-	        this.setIcon(selectedIcon);
-	    });
-	    x.marker.addListener('click', function() {
-		    this.setAnimation(google.maps.Animation.BOUNCE);
-			setTimeout(function () {
-			    this.setAnimation(null);
-			}, 700);
+	    	var self = this;
+	    	self.setIcon(selectedIcon);
+            self.setAnimation(google.maps.Animation.BOUNCE);
+            setTimeout(function() {
+                self.setAnimation(null);
+                self.setIcon(defaultIcon);
+            }, 1450);
 	    });
 	    x.marker.addListener('click', function() {
 	        this.setIcon(defaultIcon);
