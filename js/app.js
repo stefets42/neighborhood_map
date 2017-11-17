@@ -118,16 +118,6 @@ function isIntersected(array1, array2) {
     return false;
 }
 
-// XXXXXXXXXXXX
-function toggle() {
-    var x = document.getElementById('categories');
-    if (x.style.display === 'none') {
-        x.style.display = 'block';
-    } else {
-        x.style.display = 'none';
-    }
-}
-
 // Display information retrieved from Foursquare
 function addFoursquare(x, i) {
     var fsBaseUrl = 'https://api.foursquare.com/v2/venues/';
