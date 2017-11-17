@@ -1,7 +1,19 @@
+// Set global variables
+var currentViewModel;
+
+var map;
+
+var defaultIcon;
+
+var selectedIcon;
+
+var largeInfowindow;
+
+// Create the ViewModel 
 var ViewModel = function() {
 	var self = this;
 
-	// Create array of restaurants
+	// Create an array of restaurants
 	self.restaurants = [
 		{restaurantName: "Mandoobar", address: "7 rue d'Edimbourg 75008 Paris", location: {lat: 48.8793019, lng: 2.3189615}, filters :["Food"], fsId: "528f41f5498ed26b82536630"},
 		{restaurantName: "Bouche à Bouche", address: "5 rue Bourdaloue 75009 Paris", location: {lat: 48.8764377, lng: 2.3361796}, filters :["Food", "Coffee"], fsId: "4b952253f964a520c49034e3"},
@@ -25,7 +37,7 @@ var ViewModel = function() {
 	// Pick selected filters
 	self.selectedFilters = ko.observable([]);
 
-	// Filter restaurants
+	// Filter restaurants according to selected filters
 	self.filteredRestaurants = ko.computed(function() {
 		var filters = self.selectedFilters();
 		if (!filters || filters.length == 0) {
@@ -59,6 +71,8 @@ var ViewModel = function() {
 	        ),
 	        id: i
 	    });
+
+    	// Display an infovindow when the marker is clicked
 	    x.marker.addListener('click', function() {
 	        largeInfowindow.marker = this;
 	        var rating = x.foursquare.rating;
@@ -68,22 +82,30 @@ var ViewModel = function() {
 	                                   "<img src=" + x.foursquare.photo + "></img>");
 	        largeInfowindow.open(map, this);
 	    });
+
+    	// Change icon color and make it bounce when the marker is clicked
 	    x.marker.addListener('click', function() {
 	    	var self = this;
 	    	self.setIcon(selectedIcon);
-            self.setAnimation(google.maps.Animation.BOUNCE);
-            setTimeout(function() {
-                self.setAnimation(null);
-                self.setIcon(defaultIcon);
-            }, 1450);
+
+			function toggleBounce() {
+		        if (self.getAnimation() !== null) {
+		          self.setAnimation(null);
+		        } else {
+		          self.setAnimation(google.maps.Animation.BOUNCE);
+		            setTimeout(function() {
+		                self.setAnimation(null);
+		                self.setIcon(defaultIcon);
+		            }, 1450);
+		        }
+		    }
+		    toggleBounce();
 	    });
 	    x.marker.addListener('click', function() {
 	        this.setIcon(defaultIcon);
 	    });
 	}
 };
-
-var largeInfowindow;
 
 // Function isIntersected to apply filters
 function isIntersected(array1, array2) {
@@ -96,11 +118,7 @@ function isIntersected(array1, array2) {
     return false;
 }
 
-var defaultIcon;
-
-var selectedIcon;
-
-
+// XXXXXXXXXXXX
 function toggle() {
     var x = document.getElementById('categories');
     if (x.style.display === 'none') {
@@ -110,6 +128,7 @@ function toggle() {
     }
 }
 
+// Display information retrieved from Foursquare
 function addFoursquare(x, i) {
     var fsBaseUrl = 'https://api.foursquare.com/v2/venues/';
     var fsAuth = '?client_id=ESTMZ1UMKCXYOWX0LX2ZFHT10YZPMYC32ILBBEYJ05M1E0NF' +
@@ -142,8 +161,6 @@ function addFoursquare(x, i) {
 }
 
 // Display a map centered on Paris Saint-Lazare railway station
-var map;
-
 function initMap() {
 	map = new google.maps.Map(document.getElementById('map'), {
 		center: {lat: 48.8783009, lng: 2.3294025},
@@ -279,7 +296,6 @@ function initMap() {
 		]
 	});
 
-
 	defaultIcon = new google.maps.MarkerImage(
 	    'http://chart.googleapis.com/chart?chst=d_map_spin&chld=1.15|0|e6546e|40|_|%E2%80%A2',
 	    new google.maps.Size(21, 34),
@@ -302,10 +318,12 @@ function initMap() {
 	});
 
 	currentViewModel = new ViewModel();
+
     // Initial load of markers
     currentViewModel.restaurants.forEach(function(x){
         x.marker.setMap(map);
     });
+    
     ko.applyBindings(currentViewModel);
 }
 
@@ -313,5 +331,3 @@ function initMap() {
 function googleMapError() {
 	alert("Google Map Did Not Load Properly");
 };
-
-var currentViewModel;
