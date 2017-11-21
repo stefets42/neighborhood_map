@@ -39,21 +39,24 @@ var ViewModel = function() {
 
 	// Filter restaurants according to selected filters
 	self.filteredRestaurants = ko.computed(function() {
+		var rests;
 		var filters = self.selectedFilters();
-		if (!filters || filters.length == 0) {
-		    var restaurants = self.restaurants;
+		if (!filters || filters.length === 0) {
+		    rests = self.restaurants;
 		} else {
-            var restaurants = self.restaurants.filter(function(restaurant) {
+            rests = self.restaurants.filter(function(restaurant) {
                 return isIntersected(filters, restaurant.filters);
             });
 		}
+		// Remove all markers on the map
 	    self.restaurants.forEach(function(x) {
 	        x.marker.setMap(null);
 	    });
-        restaurants.forEach(function(x){
+	    // Add filtered markers on the map
+        rests.forEach(function(x){
             x.marker.setMap(map);
         });
-        return restaurants;
+        return rests;
 	});
 
 	// Add a marker to a restaurant
@@ -69,43 +72,42 @@ var ViewModel = function() {
 	            new google.maps.Point(10, 34),
 	            new google.maps.Size(21,34)
 	        ),
-	        id: i
+			id: i,
+			info: x
 	    });
 
-    	// Display an infovindow when the marker is clicked
-	    x.marker.addListener('click', function() {
-	        largeInfowindow.marker = this;
-	        var rating = x.foursquare.rating;
-	        largeInfowindow.setContent("<h3>" + x.restaurantName + "</h3>" +
-	                                   "<p> Rating : " + rating + "</p>" +
-	                                   "<p>" + currentViewModel.restaurants[this.id].address + "</p>" +
-	                                   "<img src=" + x.foursquare.photo + "></img>");
-	        largeInfowindow.open(map, this);
-	    });
+	    x.marker.addListener('click', selectMarker);
 
-    	// Change icon color and make it bounce when the marker is clicked
-	    x.marker.addListener('click', function() {
-	    	var self = this;
-	    	self.setIcon(selectedIcon);
-
-			function toggleBounce() {
-		        if (self.getAnimation() !== null) {
-		          self.setAnimation(null);
-		        } else {
-		          self.setAnimation(google.maps.Animation.BOUNCE);
-		            setTimeout(function() {
-		                self.setAnimation(null);
-		                self.setIcon(defaultIcon);
-		            }, 1450);
-		        }
-		    }
-		    toggleBounce();
-	    });
-	    x.marker.addListener('click', function() {
-	        this.setIcon(defaultIcon);
-	    });
 	}
+
 };
+
+function selectMarker() {
+	var restaurantInfo = this.info;
+	// Display an infovindow when the marker is clicked
+	largeInfowindow.marker = this;
+	var rating = restaurantInfo.foursquare.rating;
+	largeInfowindow.setContent("<h3>" + restaurantInfo.restaurantName + "</h3>" +
+							   "<p> Rating : " + rating + "</p>" +
+							   "<p>" + currentViewModel.restaurants[this.id].address + "</p>" +
+							   "<img src=" + restaurantInfo.foursquare.photo + "></img>");
+	largeInfowindow.open(map, this);
+
+	// Change icon color and make it bounce when the marker is clicked
+	var self = this;
+	function toggleBounce() {
+		if (self.getAnimation() !== null) {
+		  self.setAnimation(null);
+		} else {
+		  self.setAnimation(google.maps.Animation.BOUNCE);
+			setTimeout(function() {
+				self.setAnimation(null);
+				self.setIcon(defaultIcon);
+			}, 1450);
+		}
+	}
+	toggleBounce();
+}
 
 // Function isIntersected to apply filters
 function isIntersected(array1, array2) {
@@ -133,21 +135,21 @@ function addFoursquare(x, i) {
             var rating = venue.rating;
             var photo = "https://irs0.4sqi.net/img/general/width150" + venue.bestPhoto.suffix;
 
-			if (rating == undefined)
+			if (rating === undefined)
 			  rating = "Rating is not available";
 		  
-			if (photo == undefined)
+			if (photo === undefined)
 			  photo = "Photo is not available";
             
             x.foursquare = {
 				rating: rating,
 				photo: photo
-            }
+            };
         },
         error: function(data) {
             alert("An error occured retrieving information from Foursquare");
         }
-    })
+    });
 }
 
 // Display a map centered on Paris Saint-Lazare railway station
@@ -320,4 +322,4 @@ function initMap() {
 // Google Map Request Error Handling
 function googleMapError() {
 	alert("Google Map Did Not Load Properly");
-};
+}
