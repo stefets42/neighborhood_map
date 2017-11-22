@@ -41,13 +41,14 @@ var ViewModel = function() {
 	self.filteredRestaurants = ko.computed(function() {
 		var rests;
 		var filters = self.selectedFilters();
-		if (!filters || filters.length === 0) {
+		if (!filters || filters.length === 0 || filters[0] === undefined) {			
 		    rests = self.restaurants;
 		} else {
             rests = self.restaurants.filter(function(restaurant) {
                 return isIntersected(filters, restaurant.filters);
             });
 		}
+
 		// Remove all markers on the map
 	    self.restaurants.forEach(function(x) {
 	        x.marker.setMap(null);
